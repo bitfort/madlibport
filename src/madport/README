@@ -1,0 +1,10 @@
+madport/
+
+This directory declares classes and types needed to port MADlib using the
+meta-port dbconnector
+
+The metaport of MADlib expects two classes declared:
+  madlib::port::dbconn::PortAllocator
+  madlib::port::dbconn::PortArrayType
+
+These two classes are used by the dbconnector in metaport/

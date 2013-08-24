@@ -64,7 +64,7 @@ MemHandle<double> LinrFinal(PortAllocator palloc, MemHandle<char> state_) {
   AnyType fin = final.run(fin_args);
   MutableNativeColumnVector coef = fin[0].getAs<MutableNativeColumnVector>();
 
-  MemHandle<double> out = {coef.size(), 
+  MemHandle<double> out = {(size_t)coef.size(), 
                          (double*) palloc.Allocate(sizeof(double)*coef.size())};
 
   memcpy(out.ptr, &coef[0], out.size * sizeof(double));
