@@ -1,0 +1,320 @@
+/* ----------------------------------------------------------------------- *//**
+ *
+ * @file utilities.sql_in
+ *
+ * @brief SQL functions for carrying out routine tasks
+ *
+ * @sa For a brief overview of utility functions, see the
+ *     module description \ref grp_utilities.
+ *
+ *//* ----------------------------------------------------------------------- */
+
+m4_include(`SQLCommon.m4') --'
+m4_changequote(<!,!>)
+
+/**
+@addtogroup grp_utilities
+
+\warning <em> This MADlib method is still in early stage development. There may be some 
+issues that will be addressed in a future version. Interface and implementation
+is subject to change. </em>
+
+@about
+
+The utility module consists of useful utility functions to assist data 
+scientists in using the product. Several of these functions can be used
+while implementing new algorithms.
+
+Refer to the file for documentation on each of the utlity functions.
+
+
+@sa File utilities.sql_in documenting the SQL functions.
+
+*/
+
+/**
+ * @brief Return MADlib build information.
+ *
+ * @returns Summary of MADlib build information, consisting of MADlib version,
+ *     git revision, cmake configuration time, build type, build system,
+ *     C compiler, and C++ compiler
+ */
+CREATE FUNCTION MADLIB_SCHEMA.version()
+RETURNS TEXT
+LANGUAGE sql
+IMMUTABLE
+AS $$
+    SELECT (
+        'MADlib version: __MADLIB_VERSION__, '
+        'git revision: __MADLIB_GIT_REVISION__, '
+        'cmake configuration time: __MADLIB_BUILD_TIME__, '
+        'build type: __MADLIB_BUILD_TYPE__, '
+        'build system: __MADLIB_BUILD_SYSTEM__, '
+        'C compiler: __MADLIB_C_COMPILER__, '
+        'C++ compiler: __MADLIB_CXX_COMPILER__')::TEXT
+$$;
+
+
+/**
+ * @brief Raise an exception if the given condition is not satisfied.
+ */
+CREATE FUNCTION MADLIB_SCHEMA.assert(condition BOOLEAN, msg VARCHAR)
+RETURNS VOID
+LANGUAGE plpgsql
+IMMUTABLE
+AS $$
+BEGIN
+    IF NOT condition THEN
+        RAISE EXCEPTION 'Failed assertion: %', msg;
+    END IF;
+END
+$$;
+
+------------------------------------------------------------------------
+
+/**
+ * @brief Compute the relative error of an approximate value
+ */
+CREATE FUNCTION MADLIB_SCHEMA.relative_error(
+    approx DOUBLE PRECISION,
+    value DOUBLE PRECISION
+) RETURNS DOUBLE PRECISION
+LANGUAGE sql
+AS $$
+    SELECT abs(($1 - $2)/$2)
+$$;
+
+------------------------------------------------------------------------
+
+/**
+ * @brief Compute the relative error (w.r.t. the 2-norm) of an apprixmate vector
+ */
+CREATE FUNCTION MADLIB_SCHEMA.relative_error(
+    approx DOUBLE PRECISION[],
+    value DOUBLE PRECISION[]
+) RETURNS DOUBLE PRECISION
+LANGUAGE sql
+AS $$
+    SELECT MADLIB_SCHEMA.dist_norm2($1, $2) / MADLIB_SCHEMA.norm2($2)
+$$;
+
+------------------------------------------------------------------------
+
+/**
+ * @brief Check if a SQL statement raises an error
+ *
+ * @param sql The SQL statement
+ * @returns \c TRUE if an exception is raised while executing \c sql, \c FALSE
+ *     otherwise.
+ */
+CREATE FUNCTION MADLIB_SCHEMA.check_if_raises_error(
+    sql TEXT
+) RETURNS BOOLEAN
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    EXECUTE sql;
+    RETURN FALSE;
+EXCEPTION
+    WHEN OTHERS THEN
+        RETURN TRUE;
+END;
+$$;
+
+------------------------------------------------------------------------
+
+/**
+ * @brief Check if a column exists in a table 
+ *
+ * @param source_table Source table
+ * @param column_name  Column name in the table
+ * @returns \c TRUE if it exsists and FALSE if not 
+ */
+CREATE OR REPLACE FUNCTION MADLIB_SCHEMA.check_if_col_exists(
+    source_table TEXT,
+    column_name TEXT
+) 
+RETURNS BOOLEAN AS $$
+DECLARE
+  sql                           TEXT;
+  input_table_name              VARCHAR[];
+  actual_table_name             VARCHAR;
+  schema_name                   VARCHAR;
+BEGIN
+
+  input_table_name = regexp_split_to_array(source_table, E'\\.');
+  IF array_upper(input_table_name, 1) = 1 THEN
+    actual_table_name = input_table_name[1];
+    schema_name  := current_schema();
+  ELSIF array_upper(input_table_name, 1) = 2 THEN
+    actual_table_name = input_table_name[2];
+    schema_name  = input_table_name[1];
+  ELSE
+    RAISE EXCEPTION 'Incorrect input source table name provided';
+  END IF;
+  sql := 'SELECT MADLIB_SCHEMA.assert(count( column_name )>0, ''Error'') FROM information_schema.columns WHERE table_schema = ''' || schema_name || ''' AND table_name = ''' || actual_table_name || ''' AND column_name= ''' || column_name || '''';
+  raise notice '%', sql;
+
+  RETURN NOT MADLIB_SCHEMA.check_if_raises_error(sql);
+END;
+$$ LANGUAGE plpgsql VOLATILE;
+------------------------------------------------------------------------
+
+/**
+ * @brief Check if a floating-point number is NaN (not a number)
+ *
+ * This function exists for portability. Some DBMSs like PostgreSQL treat
+ * floating-point numbers as fully ordered -- contrary to IEEE 754. (See, e.g.,
+ * the <a href=
+ * "http://www.postgresql.org/docs/current/static/datatype-numeric.html#DATATYPE-FLOAT"
+ * >PostgreSQL documentation</a>. For portability, MADlib code should not make
+ * use of such "features" directly, but only use isnan() instead.
+ *
+ * @param number
+ * @returns \c TRUE if \c number is \c NaN, \c FALSE otherwise
+ */
+CREATE FUNCTION MADLIB_SCHEMA.isnan(
+    number DOUBLE PRECISION
+) RETURNS BOOLEAN
+LANGUAGE sql
+AS $$
+    SELECT $1 = 'NaN'::DOUBLE PRECISION;
+$$;
+
+------------------------------------------------------------------------
+
+/**
+ * @brief Create the temporary schema if it does not exist yet
+ */
+CREATE FUNCTION MADLIB_SCHEMA.create_schema_pg_temp()
+RETURNS VOID
+LANGUAGE plpgsql
+VOLATILE
+AS $$
+BEGIN
+    -- pg_my_temp_schema() is a built-in function
+    IF pg_my_temp_schema() = 0 THEN
+        -- The pg_temp schema does not exist, yet. Creating a temporary table
+        -- will create it. Note: There is *no* race condition here, because
+        -- every session has its own temp schema.
+        EXECUTE 'CREATE TEMPORARY TABLE _madlib_temp_table AS SELECT 1;
+            DROP TABLE pg_temp._madlib_temp_table CASCADE;';
+    END IF;
+END;
+$$;
+
+------------------------------------------------------------------------
+
+/**
+ * @brief Create volatile noop function
+ *
+ * The only use of this function is as an optimization fence when used in the
+ * SELECT list of a query. See, e.g.,
+ * http://archives.postgresql.org/pgsql-sql/2012-07/msg00030.php
+ */
+CREATE FUNCTION MADLIB_SCHEMA.noop()
+RETURNS VOID
+VOLATILE
+LANGUAGE c
+AS 'MODULE_PATHNAME';
+
+------------------------------------------------------------------------
+
+/*
+ * Create type bytea8 with 8-byte alignment.
+ */
+CREATE TYPE MADLIB_SCHEMA.bytea8;
+
+CREATE FUNCTION MADLIB_SCHEMA.bytea8in(cstring)
+RETURNS MADLIB_SCHEMA.bytea8 AS 'byteain'
+LANGUAGE internal IMMUTABLE STRICT;
+
+CREATE FUNCTION MADLIB_SCHEMA.bytea8out(MADLIB_SCHEMA.bytea8)
+RETURNS cstring AS 'byteaout'
+LANGUAGE internal IMMUTABLE STRICT;
+
+CREATE FUNCTION MADLIB_SCHEMA.bytea8recv(internal)
+RETURNS MADLIB_SCHEMA.bytea8 AS 'bytearecv'
+LANGUAGE internal IMMUTABLE STRICT;
+
+CREATE FUNCTION MADLIB_SCHEMA.bytea8send(MADLIB_SCHEMA.bytea8)
+RETURNS bytea AS 'byteasend'
+LANGUAGE internal IMMUTABLE STRICT;
+
+CREATE TYPE MADLIB_SCHEMA.bytea8(
+    INPUT = MADLIB_SCHEMA.bytea8in,
+    OUTPUT = MADLIB_SCHEMA.bytea8out,
+    RECEIVE = MADLIB_SCHEMA.bytea8recv,
+    SEND = MADLIB_SCHEMA.bytea8send,
+    ALIGNMENT = double
+);
+
+/**
+  * @brief Get all column names except dependent variable
+**/
+CREATE OR REPLACE FUNCTION MADLIB_SCHEMA.__internal_get_col_names_except_dep_variable(
+     source_table         VARCHAR       -- name of input  table
+   , dependent_varname    VARCHAR       -- name of dependent variable
+)
+RETURNS VARCHAR AS $$
+DECLARE
+col_names VARCHAR[];
+BEGIN
+  EXECUTE 'SELECT ARRAY(SELECT DISTINCT column_name::varchar from ' || 
+          ' information_schema.columns WHERE ' || 
+          'column_name NOT LIKE ''' || dependent_varname || '''' || 
+          'AND table_name LIKE ''' || source_table || ''')'
+  INTO col_names;
+  RETURN 'ARRAY[' || array_to_string(col_names, ',') || ']';
+END;
+$$ LANGUAGE plpgsql VOLATILE;
+
+------------------------------------------------------------------------
+/**
+ * @brief Generate random remporary names for temp table and other names
+ */
+CREATE OR REPLACE FUNCTION MADLIB_SCHEMA.__unique_string ()
+RETURNS VARCHAR AS $$
+PythonFunction(utilities, utilities, __unique_string)
+$$ LANGUAGE plpythonu;
+
+------------------------------------------------------------------------
+/**
+ * @brief Takes a string of comma separated values and puts it into an array
+ */
+CREATE OR REPLACE FUNCTION MADLIB_SCHEMA._string_to_array (
+  s VARCHAR
+)
+RETURNS VARCHAR[] AS $$
+PythonFunction(utilities, utilities, _string_to_sql_array)
+$$ LANGUAGE plpythonu;
+
+------------------------------------------------------------------------
+/**
+ * @brief Cast boolean into text
+ */
+CREATE OR REPLACE FUNCTION MADLIB_SCHEMA.bool_to_text (BOOLEAN)
+RETURNS TEXT
+STRICT
+LANGUAGE SQL AS '
+    SELECT CASE
+        WHEN $1 THEN ''t''
+        ELSE ''f''
+    END;
+';
+
+m4_ifdef(`__GREENPLUM__', `
+CREATE CAST (BOOLEAN AS TEXT)
+     WITH FUNCTION MADLIB_SCHEMA.bool_to_text(BOOLEAN)
+     AS ASSIGNMENT;
+')
+
+
+------------------------------------------------------------------------
+
+/*
+ * An array_agg() function is defined in module array_ops (to compatibility with
+ * GP 4.0.
+ */
+
+m4_changequote(<!`!>,<!'!>)
