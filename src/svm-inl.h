@@ -14,7 +14,6 @@ using namespace std;
 using namespace impala::bismarck;
 
 
-
 double SVMLoss(const StringVal &v, const BooleanVal &y,
                     const StringVal &model) {
   double pred = simple_dot(model, v, model_len);
@@ -36,6 +35,7 @@ void SVMStep(UdfContext* ctx,
   // Check of model is null and needs to be set
   if (input->ptr == NULL) {
     new (input) StringVal(ctx, sizeof(double) * len_val);
+    // TODO set to zeros
   }
 
   double *model = (double*)input->ptr;
