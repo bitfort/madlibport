@@ -23,7 +23,6 @@ int TEST_linreg() {
   labels.resize(2);
   labels[0] = 7.0;
   labels[1] = 19.0;
-  // First entry is the label
   double ex1[3] = {1.0, 3.0};
   double ex2[3] = {5.0, 7.0};
 
@@ -43,6 +42,27 @@ int TEST_linreg() {
   //test it
   bool b = test1.Execute(no_nulls, labels, ans);
   return (int)b;
+}
+
+int TEST_linpred() {
+  double coef[2] = {1.0, 2.0};
+  StringVal mod(coef, 2);
+
+  vector<StringVal> ex;
+  double ex1[3] = {1.0, 3.0};
+  double ex2[3] = {5.0, 7.0};
+
+  // Create the example input
+  ex.resize(2);
+  ex[0].ptr = (uint8_t*) ex1;
+  ex[0].len = 2 * sizeof(double);
+  ex[1].ptr = (uint8_t*) ex2;
+  ex[1].len = 2 * sizeof(double);
+
+
+
+  FAIL_IF(LinRegPredict(NULL, coef, ex[0]) != 7.0);
+  FAIL_IF(LinRegPredict(NULL, coef, ex[1]) != 19.0);
 }
 
 

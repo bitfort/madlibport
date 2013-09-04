@@ -1,9 +1,19 @@
+// author: victor bittorf (bittorf@cs.wisc.edu)
+
 #ifndef MADLIB_MODULES_IMPALA_LINREG_INL_H
 #include <cstdio>
 
-#include "linreg.h"
+// impala includes
 #include "udf/udf.h"
+
+// MADlib includes
 #include "metaport/modules/linreg-inl.h"
+
+// defines basic math operations
+#include "linalg-inl.h"
+
+// see for documentation
+#include "linreg.h"
 
 namespace madlib {
 namespace impala {
@@ -75,6 +85,16 @@ StringVal LinRegFinalize(UdfContext* context, const StringVal& input) {
   printf("ans = %f %f\n", coef.ptr[0], coef.ptr[1]);
   StringVal sv((uint8_t*) coef.ptr, coef.size*sizeof(double));
   return sv;
+}
+
+DoubleVal LinRegPredict(UdfContext* context, const StringVal& model, 
+                        const StringVal& examp) {
+  size_t len = model.len / sizeof(double);
+  double pred = simple_dot(static_cast<double*>(model.ptr),
+                           static_cast<double*>(examp.ptr),
+                           len);
+  DoubleVal dv(pred);
+  return dv;
 }
 
 } // namespace impala

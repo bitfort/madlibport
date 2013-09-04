@@ -3,7 +3,7 @@
 #define MADLIB_IMPALA_BISMARCK_H
 #include "udf/udf.h"
 
-namespace impala {
+namespace hazy {
 namespace bismarck {
 
 using namespace impala;
@@ -14,6 +14,17 @@ typedef StringVal BismarckModel_t;
 typedef DoubleVal BismarckLoss_t;
 
 // Train UDA
+
+struct bytea {
+  char* str;
+  size_t len;
+}
+
+template <class T>
+void CoerceBytea(bytea a, T *&outp, size_t *&out_len) {
+  outp = static_cast<T*>(a.str);
+  out_len = a.len / sizeof(T);
+}
 
 void BismarckInit(UdfContext* ctx, BismarckModel_t* st);
 

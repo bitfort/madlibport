@@ -18,11 +18,26 @@ void LinRegInit(UdfContext* context, StringVal* m);
 void LinRegUpdate(UdfContext* context, const StringVal& val, const DoubleVal &y, 
                   StringVal* input);
 
+/*! Combines two linear regression states
+ */
 void LinRegMerge(UdfContext* context, const StringVal& src, StringVal* dst);
 
 /*! \brief Computes the solution and returns the coefficient vector
  */
 StringVal LinRegFinalize(UdfContext* context, const StringVal& input);
+
+
+/*! \brief Uses the trained model (output from LinRegFinalize) to predict an ex
+ *
+ * Does not allocate memory.  This is a simple dot product.
+ * \param context Not used to allocate memroy
+ * \param model the tarined model, result of LinRegFinalize
+ * \param examp a double array of the example vector to predict
+ * \return the predicted label of the example
+ */
+DoubleVal LinRegPredict(UdfContext* context, const StringVal& model, 
+                        const StringVal& examp);
+
 
 } // namespace impala
 #endif
