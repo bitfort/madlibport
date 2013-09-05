@@ -16,8 +16,8 @@ udf_test: objs/udf.o
 bin/linreg_test: objs/udf.o
 	g++ -I. -o bin/linreg_test -lgtest test/test-linreg.cc objs/udf.o -g -O0 $(SRC)
 
-bin/logreg_test: objs/udf.o
-	g++ -I. -o bin/logreg_test -lgtest test/test-logreg.cc objs/udf.o -g -O0 $(SRC)
+bin/logreg_test: 
+	g++ -I. -o bin/logreg_test test/test-logreg.cc -g -O0 $(SRC)
 
 bin/svm_test: 
 	g++ -I. -o bin/svm_test test/test-svm.cc -g -O0 $(SRC) -Wall
