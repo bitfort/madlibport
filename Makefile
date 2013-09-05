@@ -21,3 +21,6 @@ bin/logreg_test: objs/udf.o
 
 bin/svm_test: 
 	g++ -I. -o bin/svm_test test/test-svm.cc -g -O0 $(SRC) -Wall
+
+bin/mf_test: 
+	g++ -I. -o bin/mf_test test/test-mf.cc -g -O0 $(SRC) -Wall

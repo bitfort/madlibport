@@ -11,9 +11,10 @@ struct bytea {
   size_t len;
 };
 
-void CoerceBytea(bytea a, double *&outp, size_t &out_len) {
-  outp = reinterpret_cast<double*>(a.str);
-  out_len = a.len / sizeof(double);
+template <class T>
+void CoerceBytea(bytea a, T *&outp, size_t &out_len) {
+  outp = reinterpret_cast<T*>(a.str);
+  out_len = a.len / sizeof(T);
 }
 
 } // bismarck
