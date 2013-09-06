@@ -1,84 +1,90 @@
-#ifndef MADLIB_MODULES_IMPALA_LOGREG_INL_H
-#include <cstdio>
 
-#include "udf/udf.h"
-#include "metaport/modules/logreg-inl.h"
+#ifndef HAZY_BISMARCK_LOGISTIC_INL_H
+#define HAZY_BISMARCK_LOGISTIC_INL_H
 
-namespace madlib {
-namespace impala {
+#include "linalg-inl.h"
 
-using namespace impala;
-using namespace impala_udf;
-using namespace std;
+// see for documentation
+#include "logreg.h"
 
-/*! \brief Initializes the UDA state with zeros
- */
-void LinRegInit(UdfContext* context, StringVal* m) {
-  PortAllocator pa(context);
-  // get a handle to our allocated state
-  madlib::MemHandle<char> state = madlib::modules::regress::LogrInit(pa);
-  m->len = state.size;
-  m->ptr = reinterpret_cast<uint8_t*>(state.ptr);
+namespace hazy {
+namespace bismarck {
+
+template <class CTX>
+double BismarckLogr<CTX>::Loss(const bytea &v, 
+                     bool y,
+                     const bytea &model) {
+  size_t model_len, v_len;
+  double *modelp, *vp;
+  CoerceBytea(model, modelp, model_len);
+  CoerceBytea(v, vp, v_len);
+  double pred = hazy::simple_dot(modelp, vp, model_len);
+  double lbl = y ? 1 : -1;
+
+  double loss = std::log(1 + std::exp(-1.0 * lbl * pred));
+  return loss;
 }
 
-/*! \brief Updates the input state with the given value
- */
-void LinRegUpdate(UdfContext* context, const StringVal& val, StringVal* input) {
-  PortAllocator pa(context);
+template <class CTX>
+void BismarckLogr<CTX>::Step(CTX* ctx, 
+                   const bytea& val, const bool &y,
+                   bytea *input, double step) {
+  size_t len_val, model_len;
+  double *v, *model;
+  CoerceBytea(val, v, len_val);
 
-  // convert to types that MADlib expects
-  madlib::MemHandle<char> state = {input->len, (char*)input->ptr};
-  size_t len_val = val.len/sizeof(double);
-  double *v = (double*) val.ptr;
-
-  madlib::MemHandle<char> prev = {0, NULL};
-
-  // the label is the first entry in the array
-  madlib::MemHandle<char> new_state = 
-      madlib::modules::regress::LogrTransition(pa, state, &v[1], 
-                                                     len_val-1, v[0],
-                                                     prev);
-  
-  // clean up memory if the transition function re-allocated
-  if (input->ptr != (uint8_t*) new_state.ptr) {
-    pa.Free(input->ptr);
+  // Check of model is null and needs to be set
+  if (input->str == NULL) {
+    input->str = (char*) BismarckAllocate<double>(ctx, len_val);
+    input->len = len_val * sizeof(double);
+    
+    // inialize the model to zeros
+    for (size_t i = 0; i < len_val; i++) { 
+      reinterpret_cast<double*>(input->str)[i] = 0.0;
+    }
   }
 
-  // state and new_state may or maynot be backed by the same memory
-  // In particular, if this is the first call to transition, these will
-  // be backed by different memory
-  input->ptr = (uint8_t*) new_state.ptr;
-  input->len = new_state.size;
+  CoerceBytea(*input, model, model_len);
+  double lbl = y ? 1 : -1;
+  // take the SVM IGD Step
+  double pred = hazy::simple_dot(model, v, model_len);
+  double ebx = std::exp(-1.0 * pred);
+
+  double scal = (- 1.0 / (1.0 + ebx) + lbl);
+
+  hazy::simple_scale_add(model, v, step * scal, model_len);
 }
 
-void LinRegMerge(UdfContext* context, const StringVal& src, StringVal* dst) {
-  PortAllocator pa(context);
-  madlib::MemHandle<char> statea = {dst->len, (char*)dst->ptr};
-  madlib::MemHandle<char> stateb = {src.len, (char*)src.ptr};
-
-  madlib::MemHandle<char> combin = 
-      madlib::modules::regress::LogrMerge(pa, statea, stateb);
-  dst->ptr = (uint8_t*) combin.ptr;
-  dst->len = combin.size;
+template <class CTX>
+void BismarckLogr<CTX>::Merge(CTX* ctx, const bytea& src, bytea* dst) {
+  // TODO check if dst is initlaized, check if src is intilaized
+  // take the mean of the models
+  hazy::simple_scale((double*) dst->str, dst->len/sizeof(double), 0.5);
+  hazy::simple_scale_add((double*) dst->str, (double*) src.str, 0.5, 
+                         dst->len/sizeof(double));
 }
 
-/*! \brief Computes the solution and returns the coefficient vector
+template <class CTX>
+void BismarckLogr<CTX>::Init(CTX* ctx, bytea *m) {
+  m->str = NULL;
+  m->len = 0;
+}
+
+/*! \brief Predicts the label for the example using the given model
  */
-StringVal LinRegFinalize(UdfContext* context, const StringVal& input) {
-  PortAllocator pa(context);
-
-  // convert to types that MADlib expects
-  madlib::MemHandle<char> state = {input.len, (char*)input.ptr};
-
-  madlib::MemHandle<double> coef = 
-      madlib::modules::regress::LogrFinal(pa, state);
-
-  printf("ans = %f %f\n", coef.ptr[0], coef.ptr[1]);
-  StringVal sv((uint8_t*) coef.ptr, coef.size*sizeof(double));
-  return sv;
-  return StringVal();
+template <class Context>
+double LogrPredict(Context* ctx, const bytea &ex, const bytea &model) {
+  size_t model_len, v_len;
+  double *modelp, *vp;
+  CoerceBytea(model, modelp, model_len);
+  CoerceBytea(ex, vp, v_len);
+  double pred = hazy::simple_dot(modelp, vp, model_len);
+  double loss = 1.0 / (1.0 + std::exp(-1.0 * pred)); 
+  return loss;
 }
-} // namespace impala
+
+
+} // namespace port
 } // namespace madlib
 #endif
 
