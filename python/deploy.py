@@ -57,4 +57,4 @@ queries = [
 
 
 
-iutil.impala_shell_exec(queries, 'foobar')
+iutil.impala_shell_exec(queries, 'toysvm')
