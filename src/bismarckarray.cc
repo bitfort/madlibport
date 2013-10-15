@@ -6,9 +6,13 @@
 
 #include <cstdio>
 #include "udf/udf.h"
+#include <string>
+#include <sstream>
+#include <iostream>
 
 using namespace impala;
 using namespace impala_udf;
+using namespace std;
 
 
 StringVal ToArray(FunctionContext* context, int n, DoubleVal *ints) {
@@ -18,6 +22,22 @@ StringVal ToArray(FunctionContext* context, int n, DoubleVal *ints) {
     darr[i] = ints[i].val;
   }
   return s;
+}
+
+StringVal PrintArray(FunctionContext* context, const StringVal& arr) {
+  double *darr = reinterpret_cast<double*>(arr.ptr);
+  int len = arr.len / sizeof(double);
+  stringstream ss;
+  ss << "<";
+  for (int i = 0; i < len; ++i) {
+    if (i != 0) ss << ", ";
+    ss << darr[i];
+  }
+  ss << ">";
+  string str = ss.str();
+  StringVal result(context, str.size());
+  memcpy(result.ptr, str.c_str(), str.size());
+  return result;
 }
 
 DoubleVal ArrayGet(FunctionContext* context, const BigIntVal &n, const StringVal &arr) {

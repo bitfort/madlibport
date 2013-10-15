@@ -2,9 +2,22 @@ EIGEN=/usr/include/eigen3/
 
 SRC=-I$(EIGEN) -Imadlib/src -Imadlib/src/ports -Imadlib/src/ports/metaport -Isrc -Iudf/
 
-all: objs/udf.o lib/libbismarckarray.so lib/libsvm.so
+all: directories objs/udf.o lib/libbismarckarray.so lib/libsvm.so
 
-objs/udf.o:
+clean:
+	rm -rf ./objs
+	rm -rf ./lib
+
+.PHONY: directories 
+
+directories: objs lib
+
+objs:
+	mkdir -p objs
+lib:
+	mkdir -p lib
+
+objs/udf.o: 
 	g++ -I. udf/udf/udf.cc -c -fPIC -o objs/udf.o $(SRC) -DIMPALA_UDF_SDK_BUILD=1
 
 uda_test: objs/udf.o

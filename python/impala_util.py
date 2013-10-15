@@ -8,7 +8,7 @@ def make_model_table(name):
   This tables stores the contents of the model after each iteration
   '''
   q = 'DROP TABLE IF EXISTS %s; CREATE TABLE %s (one int, iter int, model string) stored as PARQUETFILE;' % (name, name)
-  q += 'INSERT INTO %s VALUES (1, 0, "");' % name
+  q += "INSERT INTO %s VALUES (1, 0, '');" % name
   return q
 
 
@@ -24,10 +24,10 @@ def bismarck_inject_model(qry, model_table):
 
 def bismarck_epoch(model_table, data_table, uda_gen, epoch):
   ''' Preforms a bismarck epoch using the previous model to initialize
-  @param model_table: name of the table that stores the model 
+  @param model_table: name of the table that stores the model
                       (see make_model_table)
   @param data_table: the table that stores the examples to iterate over
-  @param uda_str: has a __PREV_MODEL__ which will be replaced, 
+  @param uda_str: has a __PREV_MODEL__ which will be replaced,
                   e.g. "svm_uda(__PREV_MODEL__, items.foo, items.bar, 0.5)"
   '''
   uda = bismarck_inject_model(uda_gen, model_table)
