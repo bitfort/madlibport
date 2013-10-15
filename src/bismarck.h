@@ -1,6 +1,6 @@
 
-#ifndef MADLIB_IMPALA_BISMARCK_H
-#define MADLIB_IMPALA_BISMARCK_H
+#ifndef MADLIB_IMPALA_BISMARCK__H
+#define MADLIB_IMPALA_BISMARCK__H
 #include "udf/udf.h"
 
 namespace hazy {
@@ -10,21 +10,21 @@ using namespace impala;
 using namespace impala_udf;
 using namespace std;
 
-typedef StringVal BismarckModel_t;
-typedef DoubleVal BismarckLoss_t;
-
 // Train UDA
 
 struct bytea {
   char* str;
   size_t len;
-}
+};
 
 template <class T>
-void CoerceBytea(bytea a, T *&outp, size_t *&out_len) {
-  outp = static_cast<T*>(a.str);
+void CoerceBytea(bytea a, T *&outp, size_t &out_len) {
+  outp = (T*)(a.str);
   out_len = a.len / sizeof(T);
 }
+
+
+#if 0
 
 void BismarckInit(UdfContext* ctx, BismarckModel_t* st);
 
@@ -74,6 +74,7 @@ BismarckLoss_t BismarckLossFinal(UdfContext* ctx, const BismarckLoss_t& loss);
 template <double (*MERGE)(double, double)>
 void BismarckLossMerge(UdfContext*, const DoubleVal &, DoubleVal*);
 
+#endif
 } // namespace bismarck
 } // namespace impala
 

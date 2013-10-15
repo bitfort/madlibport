@@ -25,7 +25,7 @@ double BismarckSVM<CTX>::Loss(const bytea &v, bool y,
 }
 
 template <class CTX>
-void BismarckSVM<CTX>::Step(CTX* ctx, const bytea &val, const bool &y, 
+void BismarckSVM<CTX>::Step(CTX* ctx, bytea val, bool y, 
                             bytea *input, double step_size, double mu) { 
   size_t len_val, model_len;
   double *v, *model;
@@ -72,7 +72,7 @@ void BismarckSVM<CTX>::Init(CTX* ctx, bytea *m) {
 }
 
 template <class Context>
-bool SVMPredict(Context* ctx, const bytea &ex, const bytea &model) {
+bool _SVMPredict(Context* ctx, const bytea &ex, const bytea &model) {
   size_t model_len, v_len;
   double *modelp, *vp;
   CoerceBytea(model, modelp, model_len);

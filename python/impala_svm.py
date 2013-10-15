@@ -16,7 +16,7 @@ def main():
   label = 'toy.lbl'
   arr = 'toarray(toy.x, toy.y, toy.z)'
 
-  n = 5
+  n = 4
   for i in xrange(1, n):
     qry.append(svm_epoch(mod_table, dat_table, label, arr, i, step=step, mu=mu))
     qry.append(svm_loss(mod_table, dat_table, label, arr, epoch=i))

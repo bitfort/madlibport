@@ -1,0 +1,9 @@
+TO RUN THE SVM:
+
+Start statestored, catalogd, and impalad
+imala-shell -f example/create_svm_toy_data.sql
+
+Then, 
+python python/impala_svm.py
+
+Will output queries to run and test the SVM

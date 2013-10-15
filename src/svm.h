@@ -40,7 +40,7 @@ class BismarckSVM {
    * \param input the current model
    */
   static void Step(Context* ctx, 
-                   const bytea& val, const bool &y,
+                   bytea val, bool y,
                    bytea *input, double step, double mu);
 
   /*! \brief Combines 2 SVM models together
