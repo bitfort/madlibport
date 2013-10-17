@@ -1,8 +1,8 @@
-DROP DATABASE IF EXISTS toysvm;
-CREATE DATABASE toysvm;
+CREATE DATABASE IF NOT EXISTS toysvm;
 
 use toysvm;
 
+DROP TABLE IF EXISTS toy;
 CREATE TABLE toy (one int, x double, y double, z double, lbl boolean);
 
 INSERT INTO toy VALUES (1, 5.0, 5.0, 1.0, true);
