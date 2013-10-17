@@ -7,7 +7,7 @@ def make_model_table(name):
   ''' Creates a query to create and initialize an empty state table
   This tables stores the contents of the model after each iteration
   '''
-  q = 'DROP TABLE IF EXISTS %s; CREATE TABLE %s (one int, iter int, model string);' % (name, name)
+  q = 'DROP TABLE IF EXISTS %s; CREATE TABLE %s (one int, iter int, model string) stored as PARQUETFILE;' % (name, name)
   q += 'INSERT INTO %s VALUES (1, 0, "");' % name
   return q
 
