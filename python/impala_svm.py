@@ -56,12 +56,12 @@ def main():
 def svm_epoch(model_table, dat_table, label, arr, epoch, step=0.1, mu=0.1):
   return iutil.bismarck_epoch(model_table, dat_table, 'svm(__PREV_MODEL__, %(arr)s, '
       '%(label)s, %(step)s, %(mu)s)' % {'arr':arr, 'label':label, 'step':step,
-        'mu':mu}, epoch)
+        'mu':mu}, epoch, label)
 
 
 def svm_loss(model_table, dat_table, label, arr, epoch):
   return iutil.bismarck_query('svmloss(__PREV_MODEL__, %(arr)s, %(label)s)' %
-      {'arr':arr, 'label':label}, model_table, dat_table, epoch)
+      {'arr':arr, 'label':label}, model_table, dat_table, epoch, label)
 
 if __name__ == '__main__':
   main()

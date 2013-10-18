@@ -1,13 +1,17 @@
 TO RUN THE SVM:
 
 Start statestored, catalogd, and impalad
-imala-shell -f example/create_svm_toy_data.sql
+
+Create a database called toysvm
 
 Deploy and compile the code:
 python python/deploy.py
 
 
-Then, 
-python python/impala_svm.py
+Then,  populate a table called toy with examples:
+python python/gen_classify_data.py
 
-Will output queries to run and test the SVM
+
+Will start to train an SVM
+python python/impala_svm.py lbl e0 e1 e2 --db toysvm --table toy -e 1
+
