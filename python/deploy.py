@@ -19,7 +19,8 @@ doit("make -B all")
 
 libs = [
     ('lib/libsvm.so', 'libsvm.so'),
-    ('lib/libbismarckarray.so', 'bisarray.so')
+    ('lib/libbismarckarray.so', 'bisarray.so'),
+    ('lib/liblogr.so', 'liblogr.so')
     ]
 
 
@@ -62,6 +63,19 @@ queries = [
 
     "DROP function IF EXISTS svmloss(string, string, boolean);",
     "create function svmloss(string, string, boolean) returns double location '/user/cloudera/libsvm.so' SYMBOL='SVMLoss';"
+
+    #
+    # Logistic
+    #
+    "DROP aggregate function IF EXISTS logr(string, string, boolean, double, double);",
+    "create aggregate function logr(string, string, boolean, double, double) returns string location '/user/cloudera/liblogr.so' UPDATE_FN='LogrUpdate';"
+
+    "DROP function IF EXISTS logrpredict(string, string);",
+    "create function logrpredict(string, string) returns boolean location '/user/cloudera/liblogr.so' SYMBOL='LogrPredict';"
+
+    "DROP function IF EXISTS logrloss(string, string, boolean);",
+    "create function logrloss(string, string, boolean) returns double location '/user/cloudera/liblogr.so' SYMBOL='LogrLoss';"
+
     ]
 
 

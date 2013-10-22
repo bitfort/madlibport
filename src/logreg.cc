@@ -79,17 +79,15 @@ StringVal LogrFinalize(FunctionContext* ctx, const StringVal &model) {
   return s;
 }
 
-#if 0
 BooleanVal LogrPredict(FunctionContext* ctx, const StringVal &model, const StringVal &ex) {
   BooleanVal r;
 
   bytea mod = StringValToBytea(model);
   bytea e = StringValToBytea(ex);
 
-  r.val = _SVMPredict(ctx, e, mod);
+  r.val = _LogrPredict(ctx, e, mod);
   return r;
 }
-#endif
 
 DoubleVal LogrLoss(FunctionContext* ctx, const StringVal &model, const StringVal &ex, const BooleanVal &lbl) {
 

@@ -73,14 +73,14 @@ void BismarckLogr<CTX>::Init(CTX* ctx, bytea *m) {
 /*! \brief Predicts the label for the example using the given model
  */
 template <class Context>
-double LogrPredict(Context* ctx, const bytea &ex, const bytea &model) {
+bool _LogrPredict(Context* ctx, const bytea &ex, const bytea &model) {
   size_t model_len, v_len;
   double *modelp, *vp;
   CoerceBytea(model, modelp, model_len);
   CoerceBytea(ex, vp, v_len);
   double pred = hazy::simple_dot(modelp, vp, model_len);
   double loss = 1.0 / (1.0 + std::exp(-1.0 * pred)); 
-  return loss;
+  return loss > 0.5;
 }
 
 

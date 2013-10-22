@@ -42,7 +42,7 @@ def main():
   label = args[0]
   arr = 'toarray(%s)' % (', '.join(map(lambda f: '%s.%s' % (dat_table, f), args[1:])))
 
-  qry.append(iutil.make_model_table('history'))
+  qry.append(iutil.make_model_table(mod_table))
   for i in xrange(1, options.epochs+1):
     qry.append(svm_epoch(mod_table, dat_table, label, arr, i, step=step, mu=mu))
     step = step * options.decay

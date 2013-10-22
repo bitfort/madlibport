@@ -42,11 +42,11 @@ def main():
   label = args[0]
   arr = 'toarray(%s)' % (', '.join(map(lambda f: '%s.%s' % (dat_table, f), args[1:])))
 
-  qry.append(iutil.make_model_table('history'))
+  qry.append(iutil.make_model_table(mod_table))
   for i in xrange(1, options.epochs+1):
-    qry.append(svm_epoch(mod_table, dat_table, label, arr, i, step=step, mu=mu))
+    qry.append(logr_epoch(mod_table, dat_table, label, arr, i, step=step, mu=mu))
     step = step * options.decay
-  qry.append(svm_loss(mod_table, dat_table, label, arr, epoch=options.epochs))
+  qry.append(logr_loss(mod_table, dat_table, label, arr, epoch=options.epochs))
 
   for q in qry:
     print q
@@ -59,7 +59,7 @@ def logr_epoch(model_table, dat_table, label, arr, epoch, step=0.1, mu=0.1):
         'mu':mu}, epoch, label)
 
 def logr_loss(model_table, dat_table, label, arr, epoch):
-  return iutil.bismarck_query('svmloss(__PREV_MODEL__, %(arr)s, %(label)s)' %
+  return iutil.bismarck_query('logrloss(__PREV_MODEL__, %(arr)s, %(label)s)' %
       {'arr':arr, 'label':label}, model_table, dat_table, epoch, label)
 
 if __name__ == '__main__':
