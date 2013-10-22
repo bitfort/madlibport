@@ -27,11 +27,12 @@ bytea StringValToBytea(const StringVal &v) {
 void SVMInit(FunctionContext* ctx, StringVal *model) {
   printf("SVMInit\n");
   // TODO
+  model->is_null = true;
   model->ptr = NULL;
   model->len = 0;
 }
 
-void SVMUpdate(FunctionContext* ctx,  const StringVal &prev_model, 
+void SVMUpdate(FunctionContext* ctx,  const StringVal &prev_model,
              const StringVal &ex, const BooleanVal &label, const DoubleVal &step_size,
              const DoubleVal &mu, StringVal *model) {
 
@@ -44,11 +45,12 @@ void SVMUpdate(FunctionContext* ctx,  const StringVal &prev_model,
       new (model) StringVal(ctx, prev_model.len);
       memcpy(model->ptr, prev_model.ptr, prev_model.len);
     }
+    model->is_null = false;
   }
 
   // Take the gradietn step
   bytea modela = StringValToBytea(*model);
-  BismarckSVM<FunctionContext>::Step(ctx, 
+  BismarckSVM<FunctionContext>::Step(ctx,
                                      StringValToBytea(ex),
                                      label.val,
                                      &modela,
