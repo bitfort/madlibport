@@ -33,7 +33,7 @@ def generate_example(n):
   '''  Generates a random example of n features
   '''
   return [random.random() * 10 - 5 for x in xrange(n)]
-  
+
 def create_examp_table_query(name, n, lbl='lbl', prefix='e'):
   ''' Creates a query which will create the example table.
   The table will be of the form:
@@ -44,16 +44,7 @@ def create_examp_table_query(name, n, lbl='lbl', prefix='e'):
   @param prefix: prefix for each data column
   '''
   cols = ', '.join(['%s%s double' %(prefix, k) for k in xrange(n)])
-  return 'CREATE TABLE %s (%s boolean, %s);' % (name, lbl, cols)
-
-def create_insert_query(name, lbl, ex):
-  ''' Creates a query to insert the given tuple into the db
-  @param name: name of data table to insert into
-  @param lbl: the label (true/false)
-  @param ex: example vector
-  '''
-  cols = ', '.join(map(str, ex))
-  return 'INSERT INTO %s VALUES (%s, %s);' % (name, lbl, cols)
+  return 'DROP TABLE IF EXISTS %s;CREATE TABLE %s (%s boolean, %s);' % (name, name, lbl, cols)
 
 def generate_ex_queries(name, soln, m):
   ''' generates a set of queries for creating examples
@@ -62,12 +53,16 @@ def generate_ex_queries(name, soln, m):
   @param m: the number of examples to make
   '''
   n = len(soln)
-  q = []
+  query = 'INSERT INTO %s VALUES ' % (name)
+  values = []
   for i in xrange(m):
     e = generate_example(n)
     lbl = predict(soln, e)
-    q.append(create_insert_query(name, lbl, e))
-  return q
+    cols = ', '.join(map(str, e))
+    values.append('(%s, %s)' % (lbl, cols))
+  query += ', '.join(values);
+  query += ';'
+  return [query]
 
 def generate_all_queries(name, n, m, lbl='lbl', prefix='e'):
   ''' Generates a set of queries for creating an example table
