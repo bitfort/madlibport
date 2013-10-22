@@ -28,7 +28,7 @@ double BismarckLogr<CTX>::Loss(const bytea &v,
 template <class CTX>
 void BismarckLogr<CTX>::Step(CTX* ctx, 
                    const bytea& val, const bool &y,
-                   bytea *input, double step) {
+                   bytea *input, double step, double mu) {
   size_t len_val, model_len;
   double *v, *model;
   CoerceBytea(val, v, len_val);

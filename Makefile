@@ -2,7 +2,7 @@ EIGEN=/usr/include/eigen3/
 
 SRC=-I$(EIGEN) -Imadlib/src -Imadlib/src/ports -Imadlib/src/ports/metaport -Isrc -Iudf/
 
-all: directories objs/udf.o lib/libbismarckarray.so lib/libsvm.so
+all: directories objs/udf.o lib/libbismarckarray.so lib/libsvm.so lib/liblogr.so
 
 clean:
 	rm -rf ./objs
@@ -37,6 +37,12 @@ lib/libbismarckarray.so: objs/udf.o
 lib/libsvm.so: objs/udf.o
 	g++ -c -fPIC -o objs/libsvm.o src/svm.cc $(SRC) 
 	g++ -shared -o lib/libsvm.so objs/libsvm.o objs/udf.o
+
+
+
+lib/liblogr.so: objs/udf.o
+	g++ -c -fPIC -o objs/liblogr.o src/logreg.cc $(SRC) 
+	g++ -shared -o lib/liblogr.so objs/liblogr.o objs/udf.o
 
 
 lib/libvartest.so: objs/udf.o

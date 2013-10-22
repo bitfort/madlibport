@@ -40,7 +40,7 @@ class BismarckLogr {
    */
   static void Step(Context* ctx, 
                    const bytea& val, const bool &y,
-                   bytea *input, double step);
+                   bytea *input, double step, double mu);
 
   /*! \brief Combines 2 Logistic models together
    */
