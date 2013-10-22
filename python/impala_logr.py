@@ -3,7 +3,7 @@ import impala_util as iutil
 
 
 def main():
-  parser = optparse.OptionParser('Impala Support Vector Machine')
+  parser = optparse.OptionParser('Impala logistic regression.')
   parser.add_option("-b", "--db", dest="database", default=None,
                         help="the database which holds data table", metavar="DB")
   parser.add_option("-t", "--table", dest="table", default=None,
@@ -53,15 +53,15 @@ def main():
   if not options.noact:
     iutil.impala_shell_exec(qry, database=options.database)
 
-def svm_epoch(model_table, dat_table, label, arr, epoch, step=0.1, mu=0.1):
-  return iutil.bismarck_epoch(model_table, dat_table, 'svm(__PREV_MODEL__, %(arr)s, '
+def logr_epoch(model_table, dat_table, label, arr, epoch, step=0.1, mu=0.1):
+  return iutil.bismarck_epoch(model_table, dat_table, 'logr(__PREV_MODEL__, %(arr)s, '
       '%(label)s, %(step)s, %(mu)s)' % {'arr':arr, 'label':label, 'step':step,
         'mu':mu}, epoch, label)
 
-
-def svm_loss(model_table, dat_table, label, arr, epoch):
+def logr_loss(model_table, dat_table, label, arr, epoch):
   return iutil.bismarck_query('svmloss(__PREV_MODEL__, %(arr)s, %(label)s)' %
       {'arr':arr, 'label':label}, model_table, dat_table, epoch, label)
 
 if __name__ == '__main__':
   main()
+

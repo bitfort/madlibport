@@ -45,6 +45,12 @@ queries = [
 
     "DROP FUNCTION IF EXISTS printarray();",
     "create FUNCTION printarray(string) returns string location '/user/cloudera/bisarray.so' SYMBOL='PrintArray';",
+
+    "DROP FUNCTION IF EXISTS encode_array(string);",
+    "create FUNCTION encode_array(string) returns string location '/user/cloudera/bisarray.so' SYMBOL='EncodeArray';",
+    "DROP FUNCTION IF EXISTS decode_array(string);",
+    "create FUNCTION decode_array(string) returns string location '/user/cloudera/bisarray.so' SYMBOL='DecodeArray';",
+
     #
     # SVM
     #
