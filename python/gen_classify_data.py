@@ -79,7 +79,6 @@ def generate_all_queries(name, n, m, lbl='lbl', prefix='e'):
   return sol, qs
 
 def main():
-
   n = 3
   m = 50
   name = 'toy'

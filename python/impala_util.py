@@ -2,6 +2,9 @@ import os
 import sys
 import tempfile
 
+'''
+Basic utility functions for interfacing with impala. 
+'''
 
 def make_model_table(name):
   ''' Creates a query to create and initialize an empty state table
@@ -44,12 +47,17 @@ def bismarck_epoch(model_table, data_table, uda_gen, epoch, helper_col):
 
 
 def doit(cmd, mayfail=False):
+  ''' Execute a command, exiting if the command fails
+  '''
   if os.system(cmd):
     print 'FAILED'
     if not mayfail:
       raise SystemExit
 
 def impala(query, mayfail=False):
+  ''' Submit a query to impala, block until it is complete.
+  By default, exit if the query fails. 
+  '''
   doit('impala-shell -q "%s"' % query, mayfail=mayfail)
 
 def impala_shell_exec(queries, database=None, shell='impala-shell'):

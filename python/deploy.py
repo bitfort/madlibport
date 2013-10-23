@@ -2,19 +2,13 @@ import os
 import sys
 
 import impala_util as iutil
+from impala_util import impala, doit
+
+'''
+Compiles and registers UDAs with impala
+'''
 
 
-def doit(cmd, mayfail=False):
-  if os.system(cmd):
-    print 'FAILED'
-    if not mayfail:
-      raise SystemExit
-
-def impala(query, mayfail=False):
-  doit('impala-shell -q "%s"' % query, mayfail=mayfail)
-
-# compile all of our files
-doit("make -B all")
 
 
 libs = [
@@ -22,12 +16,6 @@ libs = [
     ('lib/libbismarckarray.so', 'bisarray.so'),
     ('lib/liblogr.so', 'liblogr.so')
     ]
-
-
-for lb, tar in libs:
-  doit('hadoop fs -rm /user/cloudera/%s' % tar, mayfail=True)
-  doit('hadoop fs -mkdir -p /user/cloudera')
-  doit('hadoop fs -put %s /user/cloudera/%s' % (lb, tar))
 
 
 
@@ -78,6 +66,38 @@ queries = [
 
     ]
 
+def main():
+  parser = optparse.OptionParser('usage: %prog DATABASE')
 
+  parser.add_option("-m", "--make",
+                        action="store_true", dest="make", default=False,
+                                          help="Remake the shared object files (calls make).")
+  parser.add_option("-p", "--put",
+                        action="store_true", dest="put", default=False,
+                                          help="Put the the shared objects into HDFS")
+  parser.add_option("-n", "--noact",
+                        action="store_true", dest="noact", default=False,
+                                          help="just print queries, don't execute over impala")
 
-iutil.impala_shell_exec(queries, 'toysvm')
+  (options, args) = parser.parse_args()
+
+  if len(args) < 1:
+    parser.print_usage()
+    return
+
+  # compile the lib*.so files
+  if options.make:
+    doit("make -B all")
+
+  # put them into HDFS so impala can load them
+  if options.put:
+    for lb, tar in libs:
+      doit('hadoop fs -rm /user/cloudera/%s' % tar, mayfail=True)
+      doit('hadoop fs -mkdir -p /user/cloudera')
+      doit('hadoop fs -put %s /user/cloudera/%s' % (lb, tar))
+
+  # register the functions with impala
+  for q in queries:
+    print q
+  if not options.noact:
+    iutil.impala_shell_exec(queries, args[0])

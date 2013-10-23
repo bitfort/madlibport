@@ -3,7 +3,7 @@ import impala_util as iutil
 
 
 def main():
-  parser = optparse.OptionParser('Impala Support Vector Machine')
+  parser = optparse.OptionParser('usage: %prog LABEL_COLUMN FEATURE_COLUMN [FEATURE_COLUMN ...]')
   parser.add_option("-b", "--db", dest="database", default=None,
                         help="the database which holds data table", metavar="DB")
   parser.add_option("-t", "--table", dest="table", default=None,
@@ -25,6 +25,10 @@ def main():
                                           help="number of epochs to run (default 1)")
 
   (options, args) = parser.parse_args()
+
+  if len(args) < 2:
+    parser.print_usage()
+    return
 
   if options.database is None:
     print 'use --db to specify a database to use.'
