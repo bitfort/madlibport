@@ -10,20 +10,20 @@ using namespace std;
 
 /*! \brief Initializes the UDA state with zeros
  */
-void LinRegInit(FunctionContext* context, StringVal* m);
+void LinrInit(FunctionContext* context, StringVal* m);
 
 /*! \brief Updates the input state with the given value
  */
-void LinRegUpdate(FunctionContext* context, StringVal* input,
-                  const StringVal& val, const DoubleVal &y);
+void LinrUpdate(FunctionContext* context, const StringVal& val, 
+                  const DoubleVal &y, StringVal* input);
 
 /*! Combines two linear regression states
  */
-void LinRegMerge(FunctionContext* context, const StringVal& src, StringVal* dst);
+void LinrMerge(FunctionContext* context, const StringVal& src, StringVal* dst);
 
 /*! \brief Computes the solution and returns the coefficient vector
  */
-StringVal LinRegFinalize(FunctionContext* context, const StringVal& input);
+StringVal LinrFinal(FunctionContext* context, const StringVal& input);
 
 
 /*! \brief Uses the trained model (output from LinRegFinalize) to predict an ex
@@ -34,7 +34,7 @@ StringVal LinRegFinalize(FunctionContext* context, const StringVal& input);
  * \param examp a double array of the example vector to predict
  * \return the predicted label of the example
  */
-DoubleVal LinRegPredict(FunctionContext* context, const StringVal& model, 
+DoubleVal LinrPredict(FunctionContext* context, const StringVal& model, 
                         const StringVal& examp);
 
 

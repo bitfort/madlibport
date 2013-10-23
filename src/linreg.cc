@@ -48,8 +48,8 @@ void LinrInit(FunctionContext* context, StringVal* m) {
 
 /*! \brief Updates the input state with the given value
  */
-void LinrUpdate(FunctionContext* context, StringVal* input,
-                const StringVal& val, const DoubleVal &y) {
+void LinrUpdate(FunctionContext* context, const StringVal& val, const DoubleVal &y, 
+                StringVal* input) {
   PortAllocator pa(context);
 
   // convert to types that MADlib expects
@@ -87,7 +87,7 @@ void LinrMerge(FunctionContext* context, const StringVal& src, StringVal* dst) {
 
 /*! \brief Computes the solution and returns the coefficient vector
  */
-StringVal LinrFinal(FunctionContext* context, const StringVal& input) {
+StringVal LinrFinalize(FunctionContext* context, const StringVal& input) {
   PortAllocator pa(context);
 
   // convert to types that MADlib expects
