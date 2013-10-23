@@ -1,8 +1,8 @@
 EIGEN=/usr/include/eigen3/
 
-SRC=-I$(EIGEN) -Imadlib/src -Imadlib/src/ports -Imadlib/src/ports/metaport -Isrc -Iudf/
+SRC=-I$(EIGEN) -Imadlib/src -Imadlib/src/ports -Imadlib/src/ports/metaport -Isrc -Iudf/ -Iboost_1_54_0/boost/
 
-all: directories objs/udf.o lib/libbismarckarray.so lib/libsvm.so lib/liblogr.so
+all: directories objs/udf.o lib/libbismarckarray.so lib/libsvm.so lib/liblogr.so lib/liblinr.so
 
 clean:
 	rm -rf ./objs
@@ -26,28 +26,23 @@ uda_test: objs/udf.o
 udf_test: objs/udf.o
 	g++ -I. -o udf_test -lgtest udf/udf/udf-test.cc objs/udf.o $(SRC)
 
-bin/linreg_test: objs/udf.o
-	g++ -I. -o bin/linreg_test -lgtest test/test-linreg.cc objs/udf.o -g -O0 $(SRC)
-
 lib/libbismarckarray.so: objs/udf.o
-	g++ -c -fPIC -o objs/bismarckarray.o src/bismarckarray.cc $(SRC) 
-	g++ -shared -o lib/libbismarckarray.so objs/bismarckarray.o objs/udf.o
+	g++ -O3 -c -fPIC -o objs/bismarckarray.o src/bismarckarray.cc $(SRC) 
+	g++ -O3 -shared -o lib/libbismarckarray.so objs/bismarckarray.o objs/udf.o
 
+lib/liblinr.so: objs/udf.o
+	g++ -O3 -c -fPIC -o objs/liblinr.o src/linreg.cc $(SRC) 
+	g++ -O3 -shared -o lib/liblinr.so objs/liblinr.o objs/udf.o
 
 lib/libsvm.so: objs/udf.o
-	g++ -c -fPIC -o objs/libsvm.o src/svm.cc $(SRC) 
-	g++ -shared -o lib/libsvm.so objs/libsvm.o objs/udf.o
-
+	g++ -O3 -c -fPIC -o objs/libsvm.o src/svm.cc $(SRC) 
+	g++ -O3 -shared -o lib/libsvm.so objs/libsvm.o objs/udf.o
 
 
 lib/liblogr.so: objs/udf.o
-	g++ -c -fPIC -o objs/liblogr.o src/logreg.cc $(SRC) 
-	g++ -shared -o lib/liblogr.so objs/liblogr.o objs/udf.o
+	g++ -O3 -c -fPIC -o objs/liblogr.o src/logreg.cc $(SRC) 
+	g++ -O3 -shared -o lib/liblogr.so objs/liblogr.o objs/udf.o
 
-
-lib/libvartest.so: objs/udf.o
-	g++ -c -fPIC -o objs/vartest.o src/variatic_test.cc $(SRC) 
-	g++ -shared -o lib/libvartest.so objs/vartest.o objs/udf.o
 
 documentation:
 	doxygen doc/doxconf
@@ -60,3 +55,7 @@ bin/svm_test:
 
 bin/mf_test: 
 	g++ -I. -o bin/mf_test test/test-mf.cc -g -O0 $(SRC) -Wall
+
+bin/linreg_test: objs/udf.o
+	g++ -I. -o bin/linreg_test -lgtest test/test-linreg.cc objs/udf.o -g -O0 $(SRC)
+

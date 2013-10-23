@@ -16,7 +16,8 @@ Compiles and registers UDAs with impala
 libs = [
     ('lib/libsvm.so', 'libsvm.so'),
     ('lib/libbismarckarray.so', 'bisarray.so'),
-    ('lib/liblogr.so', 'liblogr.so')
+    ('lib/liblogr.so', 'liblogr.so'),
+    ('lib/liblinr.so', 'liblinr.so')
     ]
 
 
@@ -37,10 +38,10 @@ queries = [
     "DROP FUNCTION IF EXISTS printarray();",
     "create FUNCTION printarray(string) returns string location '/user/cloudera/bisarray.so' SYMBOL='PrintArray';",
 
-    "DROP FUNCTION IF EXISTS encode_array(string);",
-    "create FUNCTION encode_array(string) returns string location '/user/cloudera/bisarray.so' SYMBOL='EncodeArray';",
-    "DROP FUNCTION IF EXISTS decode_array(string);",
-    "create FUNCTION decode_array(string) returns string location '/user/cloudera/bisarray.so' SYMBOL='DecodeArray';",
+    "DROP FUNCTION IF EXISTS encodearray(string);",
+    "create FUNCTION encodearray(string) returns string location '/user/cloudera/bisarray.so' SYMBOL='EncodeArray';",
+    "DROP FUNCTION IF EXISTS decodearray(string);",
+    "create FUNCTION decodearray(string) returns string location '/user/cloudera/bisarray.so' SYMBOL='DecodeArray';",
 
     #
     # SVM
@@ -65,6 +66,15 @@ queries = [
 
     "DROP function IF EXISTS logrloss(string, string, boolean);",
     "create function logrloss(string, string, boolean) returns double location '/user/cloudera/liblogr.so' SYMBOL='LogrLoss';"
+
+    #
+    # Linear Regression
+    #
+    "DROP aggregate function IF EXISTS linr(string, string, double);",
+    "create aggregate function linr(string, string, double) returns string location '/user/cloudera/liblinr.so' UPDATE_FN='LinrUpdate';"
+
+    "DROP function IF EXISTS linrpredict(string, string);",
+    "create function linrpredict(string, string) returns boolean location '/user/cloudera/liblinr.so' SYMBOL='LinrPredict';"
 
     ]
 

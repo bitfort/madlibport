@@ -11,6 +11,12 @@ Each of these projects use User Defined Aggregates (UDAs) to train analytic
 models using an existing DBMS's data management and processing ability. 
 
 
+Dependencies:
+yum install -y eigen3-devel.noarch
+
+Also, install boost 1.54.0
+
+
 Code Base
 ===========
 This code base includes the following components.

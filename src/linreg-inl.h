@@ -24,7 +24,7 @@ using namespace std;
 
 /*! \brief Initializes the UDA state with zeros
  */
-void LinRegInit(UdfContext* context, StringVal* m) {
+void LinRegInit(FunctionContext* context, StringVal* m) {
   PortAllocator pa(context);
   // get a handle to our allocated state
   madlib::MemHandle<char> state = madlib::modules::regress::LinrInit(pa);
@@ -34,7 +34,7 @@ void LinRegInit(UdfContext* context, StringVal* m) {
 
 /*! \brief Updates the input state with the given value
  */
-void LinRegUpdate(UdfContext* context, const StringVal& val, const DoubleVal &y, 
+void LinRegUpdate(FunctionContext* context, const StringVal& val, const DoubleVal &y, 
                   StringVal* input) {
   PortAllocator pa(context);
 
@@ -60,7 +60,7 @@ void LinRegUpdate(UdfContext* context, const StringVal& val, const DoubleVal &y,
   input->len = new_state.size;
 }
 
-void LinRegMerge(UdfContext* context, const StringVal& src, StringVal* dst) {
+void LinRegMerge(FunctionContext* context, const StringVal& src, StringVal* dst) {
   PortAllocator pa(context);
   madlib::MemHandle<char> statea = {(size_t)dst->len, (char*)dst->ptr};
   madlib::MemHandle<char> stateb = {(size_t)src.len, (char*)src.ptr};
@@ -73,7 +73,7 @@ void LinRegMerge(UdfContext* context, const StringVal& src, StringVal* dst) {
 
 /*! \brief Computes the solution and returns the coefficient vector
  */
-StringVal LinRegFinalize(UdfContext* context, const StringVal& input) {
+StringVal LinRegFinalize(FunctionContext* context, const StringVal& input) {
   PortAllocator pa(context);
 
   // convert to types that MADlib expects
@@ -87,7 +87,7 @@ StringVal LinRegFinalize(UdfContext* context, const StringVal& input) {
   return sv;
 }
 
-DoubleVal LinRegPredict(UdfContext* context, const StringVal& model, 
+DoubleVal LinRegPredict(FunctionContext* context, const StringVal& model, 
                         const StringVal& examp) {
   size_t len = model.len / sizeof(double);
   double pred = simple_dot(static_cast<double*>(model.ptr),

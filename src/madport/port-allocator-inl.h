@@ -19,14 +19,14 @@ namespace dbconn {
 
 class PortAllocator { 
  public:
-  static impala_udf::UdfContext *fallback;
+  static impala_udf::FunctionContext *fallback;
   /*! \brief Default constructor
    * Donot use after calling this ctor, always construct with a context
    */
   PortAllocator() : udfctx_(NULL) { }
   /*! \brief Construct with a backing UDF context to handle allocations
    */
-  PortAllocator(impala_udf::UdfContext* u) : udfctx_(u) { }
+  PortAllocator(impala_udf::FunctionContext* u) : udfctx_(u) { }
 
   /*! \brief Allocates a pointer, delegated to backing udf context
    * \param s number of bytes to allocate
@@ -62,7 +62,7 @@ class PortAllocator {
   } 
 
  private:
-  impala_udf::UdfContext *udfctx_;
+  impala_udf::FunctionContext *udfctx_;
 };
 
 } // namespace dbconn
