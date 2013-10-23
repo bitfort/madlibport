@@ -46,7 +46,7 @@ class BismarckSVM {
   /*! \brief Combines 2 SVM models together
    */
   static void Merge(Context* ctx, const bytea &src, 
-                     bytea *dst);
+                     const bytea &dst);
 
   /*! \brief Combines two losses
    * Simply adds them together

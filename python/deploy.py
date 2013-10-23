@@ -1,6 +1,8 @@
 import os
 import sys
 
+import optparse
+
 import impala_util as iutil
 from impala_util import impala, doit
 
@@ -101,3 +103,6 @@ def main():
     print q
   if not options.noact:
     iutil.impala_shell_exec(queries, args[0])
+
+if __name__ == '__main__':
+  main()

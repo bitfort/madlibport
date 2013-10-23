@@ -56,12 +56,12 @@ void BismarckSVM<CTX>::Step(CTX* ctx, bytea val, bool y,
 
 template <class CTX>
 void BismarckSVM<CTX>::Merge(CTX* ctx, const bytea& src, 
-                   bytea* dst) {
+                   const bytea &dst) {
   // TODO check if dst is initlaized, check if src is intilaized
   // take the mean of the models
-  hazy::simple_scale((double*) dst->str, dst->len/sizeof(double), 0.5);
-  hazy::simple_scale_add((double*) dst->str, (double*) src.str, 0.5, 
-                         dst->len/sizeof(double));
+  hazy::simple_scale((double*) dst.str, dst.len/sizeof(double), 0.5);
+  hazy::simple_scale_add((double*) dst.str, (double*) src.str, 0.5, 
+                         dst.len/sizeof(double));
 
 }
 

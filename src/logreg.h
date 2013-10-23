@@ -45,7 +45,7 @@ class BismarckLogr {
   /*! \brief Combines 2 Logistic models together
    */
   static void Merge(Context* ctx, const bytea &src, 
-                     bytea *dst);
+                     const bytea &dst);
 
   /*! \brief Combines two losses
    * Simply adds them together

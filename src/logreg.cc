@@ -30,8 +30,6 @@ bytea StringValToBytea(const StringVal &v) {
 
 
 void LogrInit(FunctionContext* ctx, StringVal *model) {
-  printf("SVMInit\n");
-  // TODO
   model->is_null = true;
   model->ptr = NULL;
   model->len = 0;
@@ -41,11 +39,9 @@ void LogrUpdate(FunctionContext* ctx,  const StringVal &prev_model,
              const StringVal &ex, const BooleanVal &label, const DoubleVal &step_size,
              const DoubleVal &mu, StringVal *model) {
 
-  printf("LogrStep\n");
   // If first tuple, the model will be NULL
   if (model->ptr == NULL) {
     if (prev_model.ptr != NULL) {
-      printf("No Model, copying from old one.\n");
       // Case #2: we have a previous model to seed from
       new (model) StringVal(ctx, prev_model.len);
       memcpy(model->ptr, prev_model.ptr, prev_model.len);
@@ -63,21 +59,22 @@ void LogrUpdate(FunctionContext* ctx,  const StringVal &prev_model,
                                      mu.val);
   model->ptr = (uint8_t*) modela.str;
   model->len = modela.len;
-  printf("Length of model returend is: %lu\n", model->len);
 }
 
 void LogrMerge(FunctionContext* ctx, const StringVal &src,
               StringVal *dst) {
-  printf("SVMMerge src.size=%lu dst->size=%lu\n", src.len, dst->len);
-  new (dst) StringVal(ctx, src.len);
-  memcpy(dst->ptr, src.ptr, src.len);
-  return;
+  if (dst->is_null) {
+    // create a new dst
+      new (dst) StringVal(ctx, src.len);
+      memcpy(dst->ptr, src.ptr, src.len);
+  } else {
+    BismarckLogr<FunctionContext>::Merge(ctx, StringValToBytea(src), StringValToBytea(*dst));
+  }
 }
 
 StringVal LogrFinalize(FunctionContext* ctx, const StringVal &model) {
   StringVal s(ctx, model.len);
   s = model;
-  printf("SVMFinal size=%lu\n", s.len);
   return s;
 }
 
@@ -92,8 +89,6 @@ BooleanVal LogrPredict(FunctionContext* ctx, const StringVal &model, const Strin
 }
 
 DoubleVal LogrLoss(FunctionContext* ctx, const StringVal &model, const StringVal &ex, const BooleanVal &lbl) {
-
-  printf("Enter LogrLoss w/ len(model)=%lu len(ex)=%lu and lbl=%d\n", model.len, ex.len, lbl.val);
   DoubleVal r;
 
   bytea mod = StringValToBytea(model);

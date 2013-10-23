@@ -63,10 +63,13 @@ void SVMUpdate(FunctionContext* ctx,  const StringVal &prev_model,
 
 void SVMMerge(FunctionContext* ctx, const StringVal &src,
               StringVal *dst) {
-  printf("SVMMerge src.size=%lu dst->size=%lu\n", src.len, dst->len);
-  new (dst) StringVal(ctx, src.len);
-  memcpy(dst->ptr, src.ptr, src.len);
-  return;
+  if (dst->is_null) {
+    // create a new dst
+      new (dst) StringVal(ctx, src.len);
+      memcpy(dst->ptr, src.ptr, src.len);
+  } else {
+    BismarckSVM<FunctionContext>::Merge(ctx, StringValToBytea(src), StringValToBytea(*dst));
+  }
 }
 
 StringVal SVMFinalize(FunctionContext* ctx, const StringVal &model) {
