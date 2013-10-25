@@ -1,3 +1,4 @@
+import optparse
 import random
 import impala_util as iutil
 
@@ -79,16 +80,34 @@ def generate_all_queries(name, n, m, lbl='lbl', prefix='e'):
   return sol, qs
 
 def main():
-  n = 3
-  m = 50
-  name = 'toy'
+  parser = optparse.OptionParser('usage: %prog DATABASE OUTPUT_TALBE_NAME')
+  parser.add_option("-r", "--nrows", dest="n", default=10, type=int,
+                        help="number of examples (rows) to create", metavar="EXAMPPLES")
+  parser.add_option("-c", "--mcols", dest="m", default=3,
+      type=int,
+                        help="number of features (columns) to create", metavar="FEATURES")
+  parser.add_option("-n", "--noact",
+                        action="store_true", dest="noact", default=False,
+                                          help="just print queries, don't execute over impala")
 
-  sol, qrs = generate_all_queries(name, n, m)
+  (options, args) = parser.parse_args()
+  if len(args) != 2:
+    parser.print_usage()
+    return
+
+
+  n = options.n
+  m = options.m
+  name = args[1]
+  db = args[0]
+
+  sol, qrs = generate_all_queries(name, m, n)
 
   for q in qrs:
     print q
 
-  iutil.impala_shell_exec(qrs, database='toysvm')
+  if not options.noact:
+    iutil.impala_shell_exec(qrs, database=db)
 
 
 if __name__ == '__main__':

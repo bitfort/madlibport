@@ -25,7 +25,6 @@ def main():
                                           help="number of epochs to run (default 1)")
 
   (options, args) = parser.parse_args()
-
   if len(args) < 2:
     parser.print_usage()
     return
