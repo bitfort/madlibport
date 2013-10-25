@@ -38,12 +38,11 @@ using namespace std;
 /*! \brief Initializes the UDA state with zeros
  */
 void LinrInit(FunctionContext* context, StringVal* m) {
-  PortAllocator pa(context);
-  // get a handle to our allocated state
-  madlib::MemHandle<char> state = madlib::modules::regress::LinrInit(pa);
+  printf("Enter Init\n");
   m->is_null = true;
-  m->len = state.size;
-  m->ptr = reinterpret_cast<uint8_t*>(state.ptr);
+  m->len = 0;
+  m->ptr = NULL;
+  printf("Leave Init\n");
 }
 
 /*! \brief Updates the input state with the given value
@@ -51,6 +50,14 @@ void LinrInit(FunctionContext* context, StringVal* m) {
 void LinrUpdate(FunctionContext* context, const StringVal& val, const DoubleVal &y, 
                 StringVal* input) {
   PortAllocator pa(context);
+
+  if (input->is_null) {
+    // get a handle to our allocated state
+    madlib::MemHandle<char> state = madlib::modules::regress::LinrInit(pa);
+    input->is_null = false;
+    input->len = state.size;
+    input->ptr = reinterpret_cast<uint8_t*>(state.ptr);
+  }
 
   // convert to types that MADlib expects
   madlib::MemHandle<char> state = {(size_t)input->len, (char*)input->ptr};
@@ -75,6 +82,12 @@ void LinrUpdate(FunctionContext* context, const StringVal& val, const DoubleVal 
 }
 
 void LinrMerge(FunctionContext* context, const StringVal& src, StringVal* dst) {
+  if (dst->is_null) {
+    // create a new dst
+      new (dst) StringVal(context, src.len);
+      memcpy(dst->ptr, src.ptr, src.len);
+      return;
+  }
   PortAllocator pa(context);
   madlib::MemHandle<char> statea = {(size_t)dst->len, (char*)dst->ptr};
   madlib::MemHandle<char> stateb = {(size_t)src.len, (char*)src.ptr};
@@ -88,6 +101,15 @@ void LinrMerge(FunctionContext* context, const StringVal& src, StringVal* dst) {
 /*! \brief Computes the solution and returns the coefficient vector
  */
 StringVal LinrFinalize(FunctionContext* context, const StringVal& input) {
+  printf("Enter Final\n");
+
+  if (input.len == 0) {
+    // the UDA was run on an empty table
+    StringVal sv;
+    //printf("Levae Final\n");
+    return sv;
+  }
+
   PortAllocator pa(context);
 
   // convert to types that MADlib expects
@@ -96,8 +118,8 @@ StringVal LinrFinalize(FunctionContext* context, const StringVal& input) {
   madlib::MemHandle<double> coef = 
       madlib::modules::regress::LinrFinal(pa, state);
 
-  printf("ans = %f %f\n", coef.ptr[0], coef.ptr[1]);
   StringVal sv((uint8_t*) coef.ptr, coef.size*sizeof(double));
+  printf("Levae Final\n");
   return sv;
 }
 

@@ -10,9 +10,7 @@ from impala_util import impala, doit
 Compiles and registers UDAs with impala
 '''
 
-
-
-
+# shared objects to insert into HDFS
 libs = [
     ('lib/libsvm.so', 'libsvm.so'),
     ('lib/libbismarckarray.so', 'bisarray.so'),
@@ -20,9 +18,16 @@ libs = [
     ('lib/liblinr.so', 'liblinr.so')
     ]
 
-
-
 queries = [
+    #
+    # Linear Regression
+    #
+    "DROP aggregate function IF EXISTS linr(string, double);",
+    "create aggregate function linr(string, double) returns string location '/user/cloudera/liblinr.so' UPDATE_FN='LinrUpdate';"
+
+    "DROP function IF EXISTS linrpredict(string, string);",
+#    "create function linrpredict(string, string) returns boolean location '/user/cloudera/liblinr.so' SYMBOL='LinrPredict';"
+
     #
     # Utilities
     #
@@ -66,16 +71,6 @@ queries = [
 
     "DROP function IF EXISTS logrloss(string, string, boolean);",
     "create function logrloss(string, string, boolean) returns double location '/user/cloudera/liblogr.so' SYMBOL='LogrLoss';"
-
-    #
-    # Linear Regression
-    #
-    "DROP aggregate function IF EXISTS linr(string, string, double);",
-    "create aggregate function linr(string, string, double) returns string location '/user/cloudera/liblinr.so' UPDATE_FN='LinrUpdate';"
-
-    "DROP function IF EXISTS linrpredict(string, string);",
-    "create function linrpredict(string, string) returns boolean location '/user/cloudera/liblinr.so' SYMBOL='LinrPredict';"
-
     ]
 
 def main():
