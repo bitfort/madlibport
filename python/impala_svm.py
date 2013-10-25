@@ -59,10 +59,10 @@ def main():
       'noact': options.noact,
       }
   
-  if options.grid != 0:
-    do_gridsearch(info, concur=options.grid)
-  else:
-    train_svm(**info)
+#  if options.grid != 0:
+#    do_gridsearch(info, concur=options.grid)
+#  else:
+  train_svm(**info)
 
 def do_gridsearch(info, concur):
   ''' Tries a variety of paramters in parallel, returning which one is best.
@@ -112,7 +112,7 @@ def train_svm(mod_table=None, dat_table=None, label=None, arr=None,
   for i in xrange(1, epochs+1):
     qry.append(svm_epoch(mod_table, dat_table, label, arr, i, step=step, mu=mu))
     step = step * decay
-  qry.append(svm_loss(mod_table, dat_table, label, arr, epoch=epochs))
+#  qry.append(svm_loss(mod_table, dat_table, label, arr, epoch=epochs))
 
   for q in qry:
     print q
