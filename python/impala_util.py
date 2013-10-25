@@ -11,7 +11,7 @@ def make_model_table(name):
   This tables stores the contents of the model after each iteration
   '''
   q = 'DROP TABLE IF EXISTS %s; CREATE TABLE %s (iter int, model string);' % (name, name)
-  q += "INSERT INTO %s VALUES (0, encode_array(toarray(0,0,0)));" % name
+  q += "INSERT INTO %s VALUES (0, NULL);" % name
   return q
 
 
@@ -26,7 +26,7 @@ def bismarck_query(slct, model_table, data_table, epoch, helper_col):
   return q
 
 def bismarck_inject_model(qry, model_table):
-  return qry.replace('__PREV_MODEL__', 'decode_array(%s.model)' % model_table)
+  return qry.replace('__PREV_MODEL__', 'decodearray(%s.model)' % model_table)
 
 def bismarck_epoch(model_table, data_table, uda_gen, epoch, helper_col):
   ''' Preforms a bismarck epoch using the previous model to initialize
@@ -38,7 +38,7 @@ def bismarck_epoch(model_table, data_table, uda_gen, epoch, helper_col):
   @param helper_col: name of column in data table (for cross join hack)
   '''
   uda = bismarck_inject_model(uda_gen, model_table)
-  q = 'INSERT INTO %(hist)s SELECT %(epoch)d, encode_array(%(uda)s) FROM %(hist)s, %(dat)s ' \
+  q = 'INSERT INTO %(hist)s SELECT %(epoch)d, encodearray(%(uda)s) FROM %(hist)s, %(dat)s ' \
     'WHERE (%(dat)s.%(hack)s is null || true)=(%(hist)s.model is null || true) AND %(hist)s.iter=%(epoch)d - 1;' % \
     {'epoch': epoch, 'hist': model_table, 'dat': data_table, 'uda': uda, 'dat':data_table,
         'hack':helper_col}

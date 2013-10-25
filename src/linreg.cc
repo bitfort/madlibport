@@ -38,11 +38,9 @@ using namespace std;
 /*! \brief Initializes the UDA state with zeros
  */
 void LinrInit(FunctionContext* context, StringVal* m) {
-  printf("Enter Init\n");
   m->is_null = true;
   m->len = 0;
   m->ptr = NULL;
-  printf("Leave Init\n");
 }
 
 /*! \brief Updates the input state with the given value
@@ -101,8 +99,6 @@ void LinrMerge(FunctionContext* context, const StringVal& src, StringVal* dst) {
 /*! \brief Computes the solution and returns the coefficient vector
  */
 StringVal LinrFinalize(FunctionContext* context, const StringVal& input) {
-  printf("Enter Final\n");
-
   if (input.len == 0) {
     // the UDA was run on an empty table
     StringVal sv;
@@ -119,7 +115,6 @@ StringVal LinrFinalize(FunctionContext* context, const StringVal& input) {
       madlib::modules::regress::LinrFinal(pa, state);
 
   StringVal sv((uint8_t*) coef.ptr, coef.size*sizeof(double));
-  printf("Levae Final\n");
   return sv;
 }
 

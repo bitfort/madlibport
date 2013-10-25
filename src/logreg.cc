@@ -85,6 +85,7 @@ BooleanVal LogrPredict(FunctionContext* ctx, const StringVal &model, const Strin
   bytea e = StringValToBytea(ex);
 
   r.val = _LogrPredict(ctx, e, mod);
+  r.is_null = false;
   return r;
 }
 
@@ -95,6 +96,7 @@ DoubleVal LogrLoss(FunctionContext* ctx, const StringVal &model, const StringVal
   bytea e = StringValToBytea(ex);
 
   r.val = BismarckLogr<FunctionContext>::Loss(e, lbl.val, mod);
+  r.is_null = false;
   return r;
 }
 

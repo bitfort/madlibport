@@ -25,8 +25,6 @@ bytea StringValToBytea(const StringVal &v) {
 
 
 void SVMInit(FunctionContext* ctx, StringVal *model) {
-  printf("SVMInit\n");
-  // TODO
   model->is_null = true;
   model->ptr = NULL;
   model->len = 0;
@@ -36,11 +34,9 @@ void SVMUpdate(FunctionContext* ctx,  const StringVal &prev_model,
              const StringVal &ex, const BooleanVal &label, const DoubleVal &step_size,
              const DoubleVal &mu, StringVal *model) {
 
-  printf("SVMStep\n");
   // If first tuple, the model will be NULL
   if (model->ptr == NULL) {
     if (prev_model.ptr != NULL) {
-      printf("No Model, copying from old one.\n");
       // Case #2: we have a previous model to seed from
       new (model) StringVal(ctx, prev_model.len);
       memcpy(model->ptr, prev_model.ptr, prev_model.len);
@@ -58,7 +54,6 @@ void SVMUpdate(FunctionContext* ctx,  const StringVal &prev_model,
                                      mu.val);
   model->ptr = (uint8_t*) modela.str;
   model->len = modela.len;
-  printf("Length of model returend is: %lu\n", model->len);
 }
 
 void SVMMerge(FunctionContext* ctx, const StringVal &src,
@@ -75,7 +70,6 @@ void SVMMerge(FunctionContext* ctx, const StringVal &src,
 StringVal SVMFinalize(FunctionContext* ctx, const StringVal &model) {
   StringVal s(ctx, model.len);
   s = model;
-  printf("SVMFinal size=%lu\n", s.len);
   return s;
 }
 
@@ -86,17 +80,17 @@ BooleanVal SVMPredict(FunctionContext* ctx, const StringVal &model, const String
   bytea e = StringValToBytea(ex);
 
   r.val = _SVMPredict(ctx, e, mod);
+  r.is_null = false;
   return r;
 }
 
 DoubleVal SVMLoss(FunctionContext* ctx, const StringVal &model, const StringVal &ex, const BooleanVal &lbl) {
-
-  printf("Enter SVMLoss w/ len(model)=%lu len(ex)=%lu and lbl=%d\n", model.len, ex.len, lbl.val);
   DoubleVal r;
 
   bytea mod = StringValToBytea(model);
   bytea e = StringValToBytea(ex);
 
   r.val = BismarckSVM<FunctionContext>::Loss(e, lbl.val, mod);
+  r.is_null = false;
   return r;
 }
